@@ -1,0 +1,258 @@
+{
+  "Mean": {
+    "description": "Average value of the signal",
+    "domain": "Statistical",
+    "useCase": "Understanding the central tendency. For accelerometer data, mean ≈ 9.8 indicates gravity (vertical orientation).",
+    "interpretation": "Higher values indicate signal is mostly positive, lower values indicate mostly negative.",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Median": {
+    "description": "Middle value when data is sorted",
+    "domain": "Statistical",
+    "useCase": "Robust alternative to mean, less affected by outliers.",
+    "interpretation": "Similar to mean but ignores extreme values.",
+    "complexity": "O(n log n)",
+    "icon": "📊"
+  },
+  "Standard deviation": {
+    "description": "Measure of how spread out values are",
+    "domain": "Statistical",
+    "useCase": "High std dev = lots of movement/variation. Low std dev = stable signal.",
+    "interpretation": "Walking: ~0.6-0.8, Sitting: ~0.05-0.1",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Variance": {
+    "description": "Standard deviation squared",
+    "domain": "Statistical",
+    "useCase": "Similar to std dev but on different scale. Measures signal energy.",
+    "interpretation": "Higher variance = more dynamic activity",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Max": {
+    "description": "Maximum value in the signal",
+    "domain": "Statistical",
+    "useCase": "Detect peak accelerations or extreme events.",
+    "interpretation": "High max values indicate sudden movements or impacts.",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Min": {
+    "description": "Minimum value in the signal",
+    "domain": "Statistical",
+    "useCase": "Detect lowest points in signal.",
+    "interpretation": "Combined with max, shows signal range.",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Kurtosis": {
+    "description": "Measures the 'tailedness' of the distribution",
+    "domain": "Statistical",
+    "useCase": "Identifies outliers and extreme values. Normal distribution has kurtosis ≈ 3.",
+    "interpretation": ">3: heavy-tailed (more outliers), <3: light-tailed (fewer outliers)",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Skewness": {
+    "description": "Measures asymmetry of the distribution",
+    "domain": "Statistical",
+    "useCase": "Detect if signal is skewed toward positive or negative values.",
+    "interpretation": "0: symmetric, >0: right-skewed, <0: left-skewed",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Interquartile range": {
+    "description": "Range between 25th and 75th percentile",
+    "domain": "Statistical",
+    "useCase": "Robust measure of spread, ignores extreme outliers.",
+    "interpretation": "Shows where middle 50% of data lies.",
+    "complexity": "O(n log n)",
+    "icon": "📊"
+  },
+  "Entropy": {
+    "description": "Measures signal complexity/randomness",
+    "domain": "Statistical",
+    "useCase": "High entropy = unpredictable/random. Low entropy = regular/predictable.",
+    "interpretation": "Walking: medium entropy, Sitting: low entropy",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Zero crossing rate": {
+    "description": "Number of times signal crosses zero",
+    "domain": "Temporal",
+    "useCase": "Detects oscillatory patterns. High for periodic activities like walking.",
+    "interpretation": "Walking: 40-60, Sitting: <10",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Slope": {
+    "description": "Overall trend direction of the signal",
+    "domain": "Temporal",
+    "useCase": "Positive slope = increasing trend, negative = decreasing.",
+    "interpretation": "Useful for detecting transitions (sit-to-stand has positive slope).",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Mean absolute diff": {
+    "description": "Average change between consecutive points",
+    "domain": "Temporal",
+    "useCase": "Measures signal dynamics. High = rapidly changing signal.",
+    "interpretation": "Walking: ~0.3-0.8, Sitting: <0.1",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Median absolute diff": {
+    "description": "Median change between consecutive points",
+    "domain": "Temporal",
+    "useCase": "Robust version of mean absolute diff.",
+    "interpretation": "Less affected by sudden spikes in signal.",
+    "complexity": "O(n log n)",
+    "icon": "⏱️"
+  },
+  "Autocorrelation": {
+    "description": "How similar signal is to itself at different time lags",
+    "domain": "Temporal",
+    "useCase": "Detects repeating patterns. Perfect for periodic activities.",
+    "interpretation": "High autocorrelation = strong repeating pattern (like walking steps).",
+    "complexity": "O(n²)",
+    "icon": "⏱️"
+  },
+  "Centroid": {
+    "description": "Time center of mass of the signal",
+    "domain": "Temporal",
+    "useCase": "Where the signal's energy is concentrated in time.",
+    "interpretation": "Indicates when most activity occurs in the window.",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Positive turning points": {
+    "description": "Number of local maxima (peaks)",
+    "domain": "Temporal",
+    "useCase": "Counts peaks in signal. Walking has many peaks.",
+    "interpretation": "More turning points = more complex/oscillatory pattern.",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Negative turning points": {
+    "description": "Number of local minima (valleys)",
+    "domain": "Temporal",
+    "useCase": "Counts valleys in signal.",
+    "interpretation": "Should be similar to positive turning points for periodic signals.",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Area under the curve": {
+    "description": "Total area under the signal curve",
+    "domain": "Temporal",
+    "useCase": "Measures total signal magnitude over time.",
+    "interpretation": "Larger area = stronger signal or longer duration of activity.",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Absolute energy": {
+    "description": "Sum of squared values",
+    "domain": "Statistical",
+    "useCase": "Total energy in the signal.",
+    "interpretation": "Higher energy = more intense movements.",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Signal distance": {
+    "description": "Total path length of the signal",
+    "domain": "Temporal",
+    "useCase": "Measures how much the signal travels.",
+    "interpretation": "Higher distance = more dynamic signal.",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "Root mean square": {
+    "description": "Square root of average of squared values",
+    "domain": "Statistical",
+    "useCase": "Measures signal power/magnitude.",
+    "interpretation": "Related to signal energy and amplitude.",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Peak to peak distance": {
+    "description": "Difference between maximum and minimum values",
+    "domain": "Statistical",
+    "useCase": "Shows signal range/amplitude.",
+    "interpretation": "Larger range = more variation in signal.",
+    "complexity": "O(n)",
+    "icon": "📊"
+  },
+  "Neighbourhood peaks": {
+    "description": "Number of peaks in signal using neighborhood detection",
+    "domain": "Temporal",
+    "useCase": "Detects prominent peaks.",
+    "interpretation": "Useful for counting steps in walking.",
+    "complexity": "O(n)",
+    "icon": "⏱️"
+  },
+  "FFT mean coefficient": {
+    "description": "Average frequency magnitude",
+    "domain": "Spectral",
+    "useCase": "Overall frequency content of signal.",
+    "interpretation": "Higher value = more frequency components present.",
+    "complexity": "O(n log n)",
+    "icon": "📈"
+  },
+  "Spectral entropy": {
+    "description": "Randomness in frequency domain",
+    "domain": "Spectral",
+    "useCase": "High entropy = broad frequency spectrum, low = narrow.",
+    "interpretation": "Periodic activities have low spectral entropy.",
+    "complexity": "O(n log n)",
+    "icon": "📈"
+  },
+  "Power bandwidth": {
+    "description": "Frequency range where most power is concentrated",
+    "domain": "Spectral",
+    "useCase": "Shows dominant frequency range.",
+    "interpretation": "Walking: ~1-3 Hz, Running: ~2-5 Hz",
+    "complexity": "O(n log n)",
+    "icon": "📈"
+  },
+  "Maximum frequency": {
+    "description": "Highest significant frequency component",
+    "domain": "Spectral",
+    "useCase": "Identifies fastest oscillations in signal.",
+    "interpretation": "Higher for rapid movements.",
+    "complexity": "O(n log n)",
+    "icon": "📈"
+  },
+  "Median frequency": {
+    "description": "Frequency that divides power spectrum in half",
+    "domain": "Spectral",
+    "useCase": "Central frequency of the signal.",
+    "interpretation": "Indicates dominant oscillation rate.",
+    "complexity": "O(n log n)",
+    "icon": "📈"
+  },
+  "Fundamental frequency": {
+    "description": "Lowest frequency with significant power",
+    "domain": "Spectral",
+    "useCase": "Main repeating pattern frequency.",
+    "interpretation": "Walking: ~2 Hz (2 steps per second)",
+    "complexity": "O(n log n)",
+    "icon": "📈"
+  },
+  "Spectral centroid": {
+    "description": "Center of mass of frequency spectrum",
+    "domain": "Spectral",
+    "useCase": "Where most frequency energy is located.",
+    "interpretation": "Higher centroid = more high-frequency content.",
+    "complexity": "O(n log n)",
+    "icon": "📈"
+  },
+  "_default": {
+    "description": "Feature extracted from time series data",
+    "domain": "Unknown",
+    "useCase": "Provides information about signal characteristics.",
+    "interpretation": "Refer to TSFEL documentation for detailed information.",
+    "complexity": "Varies",
+    "icon": "❓"
+  }
+}

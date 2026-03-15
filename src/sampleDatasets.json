@@ -1,0 +1,88 @@
+{
+  "samples": [
+    {
+      "id": "walking",
+      "name": "Walking Activity",
+      "filename": "walking_activity.csv",
+      "path": "/sample_data/walking_activity.csv",
+      "description": "Accelerometer data from a person walking",
+      "icon": "🚶",
+      "category": "Human Activity Recognition",
+      "dataPoints": 128,
+      "columns": 1,
+      "sensor": "Accelerometer (X-axis)",
+      "samplingFreq": 50,
+      "recommendedSettings": {
+        "domains": ["statistical", "temporal"],
+        "windowSize": 99,
+        "overlap": 50
+      },
+      "expectedFeatures": {
+        "mean": "~1.0 (horizontal movement)",
+        "variance": "~0.6-0.8 (high variation)",
+        "zeroCrossings": "~40-60 (periodic pattern)"
+      },
+      "learnGoals": [
+        "Understand periodic patterns",
+        "See high variance in dynamic activities",
+        "Learn about temporal features"
+      ]
+    },
+    {
+      "id": "sitting",
+      "name": "Sitting (Static)",
+      "filename": "sitting_static.csv",
+      "path": "/sample_data/sitting_static.csv",
+      "description": "Accelerometer data from a person sitting still",
+      "icon": "🪑",
+      "category": "Human Activity Recognition",
+      "dataPoints": 50,
+      "columns": 1,
+      "sensor": "Accelerometer (Z-axis)",
+      "samplingFreq": 50,
+      "recommendedSettings": {
+        "domains": ["statistical"],
+        "windowSize": 50,
+        "overlap": 0
+      },
+      "expectedFeatures": {
+        "mean": "~9.8 (gravity)",
+        "variance": "~0.01 (very low)",
+        "zeroCrossings": "<5 (minimal movement)"
+      },
+      "learnGoals": [
+        "Contrast with walking data",
+        "See low variance in static activities",
+        "Understand gravity effect"
+      ]
+    },
+    {
+      "id": "sine",
+      "name": "Simple Sine Wave",
+      "filename": "sine_wave.csv",
+      "path": "/sample_data/sine_wave.csv",
+      "description": "Perfect sine wave for learning feature basics",
+      "icon": "📈",
+      "category": "Educational",
+      "dataPoints": 60,
+      "columns": 1,
+      "sensor": "Synthetic signal",
+      "samplingFreq": 10,
+      "recommendedSettings": {
+        "domains": ["statistical", "spectral"],
+        "windowSize": 60,
+        "overlap": 0
+      },
+      "expectedFeatures": {
+        "mean": "~0.0 (centered)",
+        "variance": "~0.5 (symmetric)",
+        "spectralPeak": "~1 Hz (clear frequency)"
+      },
+      "learnGoals": [
+        "Learn with perfect, predictable data",
+        "Understand spectral features",
+        "See what a 'clean' signal looks like"
+      ]
+    }
+  ]
+}
