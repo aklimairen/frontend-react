@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BsFillInfoCircleFill, BsFillQuestionCircleFill } from "react-icons/bs";
 
-const API_URL = 'http://localhost:5000';
+// const API_URL = 'http://localhost:5000';
+const API_URL = 'https://tsfel-backend.onrender.com';
 
 // Signal type configurations with typical sampling frequencies and recommended domains
 const SIGNAL_TYPES = {
