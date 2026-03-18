@@ -3,7 +3,8 @@ import axios from 'axios';
 import SampleDataSelector from './SampleDataSelector';
 import { BsFillInfoCircleFill } from "react-icons/bs";
 
-const API_URL = 'http://localhost:5000';
+// const API_URL = 'http://localhost:5000';
+const API_URL = 'https://tsfel-backend.onrender.com';
 
 function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfigChange }) {
   const [isDragging, setIsDragging] = useState(false);
