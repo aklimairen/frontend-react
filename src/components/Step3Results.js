@@ -6,7 +6,7 @@ import { BsFillQuestionCircleFill, BsChevronDown, BsChevronUp , BsCloudDownloadF
 import { BsGraphUp } from "react-icons/bs";
 import TimeSeriesVisualization from './TimeSeriesVisualization';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://tsfel-backend.onrender.com';
 
 function Step3Results({ results, onNewExtraction, uploadedFile, windowSize, overlap, labelColumn }) {
   const [activeTab, setActiveTab] = useState('all');

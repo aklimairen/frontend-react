@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { BsInfoCircle } from 'react-icons/bs';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://tsfel-backend.onrender.com';
 
 function TimeSeriesVisualization({ 
   filename, 

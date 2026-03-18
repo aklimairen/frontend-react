@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import sampleDatasets from '../sampleDatasets.json';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://tsfel-backend.onrender.com';
 
 function SampleDataSelector({ onSampleSelect, onConfigUpdate }) {
   const [selectedSample, setSelectedSample] = useState(null);
