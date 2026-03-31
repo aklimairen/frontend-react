@@ -928,15 +928,16 @@ function Step3Results({ results, onNewExtraction, uploadedFile, windowSize, over
                 layout={{
                   title: {
                     text: 'Feature Correlation Matrix',
-                    font: { size: 18, weight: 'bold', color: '#1f2937' }
+                    font: { size: 18, weight: 'bold', color: '#1f2937' },
+                    y: 0.98
                   },
                   height: 600,
                   width: undefined,
                   autosize: true,
-                  margin: { t: 80, l: 180, r: 120, b: 180 },
+                  margin: { t: 100, l: 180, r: 120, b: 180 },
                   xaxis: { 
                     title: {
-                      text: '<b>Feature Name</b><br><i style="font-size:11px">← Click and drag to zoom in</i>',
+                      text: '<b>Feature Name</b>',
                       standoff: 20
                     },
                     tickangle: -45,
@@ -953,24 +954,7 @@ function Step3Results({ results, onNewExtraction, uploadedFile, windowSize, over
                     tickfont: { size: 10 }
                   },
                   plot_bgcolor: '#f9fafb',
-                  paper_bgcolor: 'white',
-                  annotations: [
-                    {
-                      text: '💡 Hover over cells to see detailed correlation information',
-                      xref: 'paper',
-                      yref: 'paper',
-                      x: 0.5,
-                      y: 1.12,
-                      xanchor: 'center',
-                      yanchor: 'bottom',
-                      showarrow: false,
-                      font: {
-                        size: 11,
-                        color: '#6b7280',
-                        family: 'Arial'
-                      }
-                    }
-                  ]
+                  paper_bgcolor: 'white'
                 }}
                 config={{ 
                   responsive: true, 
