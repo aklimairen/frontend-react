@@ -3,7 +3,6 @@ import axios from 'axios';
 import SampleDataSelector from './SampleDataSelector';
 import { BsFillInfoCircleFill } from "react-icons/bs";
 
-// const API_URL = 'http://localhost:5000';
 const API_URL = 'https://tsfel-backend.onrender.com';
 
 function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfigChange }) {
@@ -57,31 +56,30 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
         setError(response.data.error);
       }
     } catch (err) {
-      setError('Cannot connect to server. Make sure backend is running on port 5000.');
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to server. Please wait a moment and try again (server may be starting up).');
+      } else {
+        setError(err.response?.data?.error || 'Upload failed. Please try again.');
+      }
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Handler for sample data selection (now uses real backend upload)
   const handleSampleSelect = (file, backendResponse) => {
-    console.log('Sample selected and uploaded:', file.name);
-    // Backend has already uploaded, just pass the response
     onFileUpload(file, backendResponse);
     setError(null);
   };
 
-  // Handler for config updates from sample selector
   const handleConfigUpdate = (newConfig) => {
-    console.log('Config updated:', newConfig);
     onConfigChange(newConfig);
   };
 
   return (
     <div className="step-container">
-      <h2 className="step-title">Step 1: Data Ingestion & Preprocessing</h2>
+      <h2 className="step-title">Step 1: Upload Your Data</h2>
       <p className="step-description">
-        Upload your dataset and configure basic preprocessing parameters before extracting features.
+        Upload your time series dataset or try a sample dataset to get started.
       </p>
 
       {/* Sample Data Selector */}
@@ -94,7 +92,12 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
       <div className="form-group">
         <label className="form-label">
           Upload Your Dataset
-          <span className="info-icon" title="Upload CSV, TXT, TSV, Excel, JSON, or Parquet files"><BsFillInfoCircleFill /></span>
+          <span 
+            className="info-icon" 
+            title="Supported formats: CSV, TXT, TSV, Excel (.xlsx, .xls), JSON, Parquet"
+          >
+            <BsFillInfoCircleFill />
+          </span>
         </label>
         
         <div
@@ -121,7 +124,7 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
           ) : (
             <>
               <p className="upload-text">Click to upload or drag and drop</p>
-              <p className="upload-hint">CSV, TXT, TSV, Excel, JSON, Parquet (MAX. 50MB)</p>
+              <p className="upload-hint">CSV, TXT, TSV, Excel, JSON, Parquet (Max 50MB)</p>
             </>
           )}
         </div>
@@ -130,9 +133,11 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
         {fileInfo && (
           <div className="file-info">
             <p className="file-info-title">✓ File uploaded successfully</p>
-            <p className="file-info-text">File: {fileInfo.filename}</p>
             <p className="file-info-text">
-              {fileInfo.rows} rows × {fileInfo.columns.length} columns
+              <strong>{fileInfo.filename}</strong>
+            </p>
+            <p className="file-info-text">
+              {fileInfo.rows.toLocaleString()} rows × {fileInfo.columns.length} columns
             </p>
           </div>
         )}
@@ -152,26 +157,16 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
         )}
       </div>
 
-      {/* Sampling Frequency */}
+      {/* Quick Settings */}
       <div className="form-group">
         <label className="form-label">
-          Sampling Frequency (Hz)
-          <span className="info-icon" title="The rate at which data points were collected"><BsFillInfoCircleFill /></span>
-        </label>
-        <input
-          type="number"
-          className="form-input"
-          value={configData.samplingFreq}
-          onChange={(e) => onConfigChange({ samplingFreq: parseInt(e.target.value) })}
-          placeholder="e.g., 50"
-        />
-      </div>
-
-      {/* Data Cleaning Options */}
-      <div className="form-group">
-        <label className="form-label">
-          Data Cleaning Options
-          <span className="info-icon" title="Select preprocessing steps"><BsFillInfoCircleFill /></span>
+          Quick Settings
+          <span 
+            className="info-icon" 
+            title="Basic preprocessing options. You can adjust more settings in Step 2."
+          >
+            <BsFillInfoCircleFill />
+          </span>
         </label>
         <div className="checkbox-group">
           <label className="checkbox-item">
@@ -181,7 +176,7 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
               checked={configData.handleMissing}
               onChange={(e) => onConfigChange({ handleMissing: e.target.checked })}
             />
-            <span className="checkbox-label">Handle Missing Values</span>
+            <span className="checkbox-label">Handle missing values automatically</span>
           </label>
 
           <label className="checkbox-item">
@@ -191,17 +186,7 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
               checked={configData.normalize}
               onChange={(e) => onConfigChange({ normalize: e.target.checked })}
             />
-            <span className="checkbox-label">Normalize Data</span>
-          </label>
-
-          <label className="checkbox-item">
-            <input
-              type="checkbox"
-              className="checkbox-input"
-              checked={configData.noiseReduction}
-              onChange={(e) => onConfigChange({ noiseReduction: e.target.checked })}
-            />
-            <span className="checkbox-label">Noise Reduction (Filter)</span>
+            <span className="checkbox-label">Normalize data (recommended)</span>
           </label>
         </div>
       </div>
@@ -210,8 +195,9 @@ function Step1Upload({ onFileUpload, onGoToStep2, fileInfo, configData, onConfig
         className="btn btn-primary"
         onClick={onGoToStep2}
         disabled={!fileInfo}
+        style={{ marginTop: '1rem' }}
       >
-        Go to Step 2 →
+        Continue to Step 2 →
       </button>
     </div>
   );

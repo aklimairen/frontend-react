@@ -1070,3 +1070,117 @@ body {
   color: #6b7280;
   margin-left: 0.5rem;
 }
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.step-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.step-dot span:first-child {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.step-dot.active span:first-child {
+  background: #14b8a6;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+}
+
+.step-dot.completed span:first-child {
+  background: #059669;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.step-dot.active .step-label {
+  color: #14b8a6;
+  font-weight: 600;
+}
+
+.step-line {
+  width: 80px;
+  height: 3px;
+  background: #e5e7eb;
+  margin-bottom: 1.5rem;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.step-line.completed {
+  background: #059669;
+}
+
+.header-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: 1.5rem 2rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 3rem;
+  background: white;
+}
+
+.app-footer a {
+  color: #14b8a6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Error Container */
+.error-container {
+  background: #fee2e2;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid #fca5a5;
+  text-align: center;
+}
+
+.error-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #991b1b;
+  margin-bottom: 0.5rem;
+}
+
+.error-text {
+  color: #b91c1c;
+  margin-bottom: 1rem;
+}

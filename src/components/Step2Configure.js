@@ -2,65 +2,56 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BsFillInfoCircleFill, BsFillQuestionCircleFill } from "react-icons/bs";
 
-// const API_URL = 'http://localhost:5000';
 const API_URL = 'https://tsfel-backend.onrender.com';
 
-// Signal type configurations with typical sampling frequencies and recommended domains
+// Signal type configurations
 const SIGNAL_TYPES = {
   accelerometer: {
-    label: 'Accelerometer / IMU (Motion Data)',
-    description: 'Smartphone sensors, wearables, activity recognition',
+    label: 'Accelerometer / IMU',
+    description: 'Motion sensors, wearables, activity recognition',
     typicalFs: 50,
-    fsRange: '20-200 Hz',
     recommendedDomains: ['temporal', 'statistical']
   },
   gyroscope: {
-    label: 'Gyroscope (Rotation Data)',
+    label: 'Gyroscope',
     description: 'Angular velocity, orientation tracking',
     typicalFs: 50,
-    fsRange: '20-200 Hz',
     recommendedDomains: ['temporal', 'statistical']
   },
   ecg: {
-    label: 'ECG / Biomedical Signals',
+    label: 'ECG / Biomedical',
     description: 'Heart rate, medical monitoring',
     typicalFs: 250,
-    fsRange: '100-1000 Hz',
     recommendedDomains: ['temporal', 'spectral']
   },
   emg: {
-    label: 'EMG (Muscle Activity)',
-    description: 'Electromyography, muscle signals',
+    label: 'EMG (Muscle)',
+    description: 'Electromyography signals',
     typicalFs: 1000,
-    fsRange: '500-2000 Hz',
     recommendedDomains: ['temporal', 'spectral', 'statistical']
   },
   audio: {
     label: 'Audio / Speech',
     description: 'Voice recordings, sound analysis',
     typicalFs: 16000,
-    fsRange: '8000-44100 Hz',
     recommendedDomains: ['spectral']
   },
   environmental: {
-    label: 'Environmental Sensors',
+    label: 'Environmental',
     description: 'Temperature, humidity, pressure',
     typicalFs: 1,
-    fsRange: '0.01-10 Hz',
     recommendedDomains: ['statistical', 'temporal']
   },
   financial: {
-    label: 'Financial / Stock Data',
-    description: 'Price data, market indicators',
+    label: 'Financial Data',
+    description: 'Stock prices, market indicators',
     typicalFs: 1,
-    fsRange: '0.001-1 Hz',
     recommendedDomains: ['statistical', 'temporal']
   },
   other: {
     label: 'Other / Custom',
-    description: 'I\'ll specify my own sampling frequency',
+    description: 'Custom sampling frequency',
     typicalFs: 50,
-    fsRange: 'Varies',
     recommendedDomains: ['temporal', 'statistical']
   }
 };
@@ -73,8 +64,8 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
   const [availableColumns, setAvailableColumns] = useState([]);
   const [signalType, setSignalType] = useState('accelerometer');
   const [showSignalHelp, setShowSignalHelp] = useState(false);
+  const [showWindowHelp, setShowWindowHelp] = useState(false);
 
-  // When file is uploaded, get all column names
   useEffect(() => {
     if (fileInfo && fileInfo.columns) {
       const nonNumericCols = fileInfo.columns.filter(col => 
@@ -91,31 +82,22 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
     }
   }, [fileInfo, configData.labelColumn]);
 
-  // Update sampling frequency when signal type changes
   const handleSignalTypeChange = (type) => {
     setSignalType(type);
     const signalConfig = SIGNAL_TYPES[type];
-    
-    // Update sampling frequency to typical value for this signal type
     onConfigChange({ 
       samplingFreq: signalConfig.typicalFs,
       signalType: type
     });
-    
-    // Optionally suggest recommended domains
-    // Uncomment below if you want auto-selection of domains
-    // onConfigChange({ domains: signalConfig.recommendedDomains });
   };
 
   const handleDomainChange = (domain, checked) => {
     let newDomains = [...configData.domains];
-    
     if (checked) {
       newDomains.push(domain);
     } else {
       newDomains = newDomains.filter(d => d !== domain);
     }
-    
     onConfigChange({ domains: newDomains });
   };
 
@@ -160,35 +142,42 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
       signal_type: signalType
     };
 
-    console.log('🚀 Starting extraction with params:', extractionParams);
-
     try {
       const response = await axios.post(`${API_URL}/extract`, extractionParams);
 
       if (response.data.success === true && response.data.features) {
-        console.log('✅ Extraction succeeded!');
         onExtractionComplete(response.data);
       } else {
         setError(response.data.error || 'Extraction failed - no features returned');
       }
     } catch (err) {
-      console.error('❌ Extraction error:', err);
-      setError(err.response?.data?.error || 'Failed to extract features');
+      setError(err.response?.data?.error || 'Failed to extract features. Please try again.');
     } finally {
       setIsExtracting(false);
     }
   };
 
   const currentSignalConfig = SIGNAL_TYPES[signalType];
+  
+  // Calculate helpful values
+  const windowDuration = configData.samplingFreq > 0 && configData.windowSize > 0 
+    ? (configData.windowSize / configData.samplingFreq).toFixed(2) 
+    : 0;
+  const estimatedWindows = fileInfo && configData.windowSize > 0
+    ? Math.floor((fileInfo.rows - configData.windowSize * (configData.overlap/100)) / (configData.windowSize * (1 - configData.overlap/100)))
+    : 0;
 
   return (
     <div className="step-container">
       <h2 className="step-title">Step 2: Configure Feature Extraction</h2>
       <p className="step-description">
-        Customize feature extraction parameters for {fileInfo.filename}
+        Set parameters for extracting features from <strong>{fileInfo.filename}</strong>
+        <span style={{ color: '#6b7280', marginLeft: '0.5rem' }}>
+          ({fileInfo.rows} rows × {fileInfo.columns.length} columns)
+        </span>
       </p>
 
-      {/* Signal Type Selection - Compact Section */}
+      {/* Signal Type Selection */}
       <div className="form-group" style={{ 
         backgroundColor: '#f8fafc', 
         padding: '1.25rem', 
@@ -214,39 +203,41 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
               gap: '0.25rem'
             }}
           >
-            <BsFillQuestionCircleFill /> {showSignalHelp ? 'Hide help' : 'Why does this matter?'}
+            <BsFillQuestionCircleFill /> {showSignalHelp ? 'Hide' : 'Why?'}
           </button>
         </div>
 
-        {/* Help tooltip */}
         {showSignalHelp && (
           <div style={{
-            backgroundColor: '#fefce8',
+            backgroundColor: '#eff6ff',
             padding: '0.75rem',
             borderRadius: '0.375rem',
             marginBottom: '0.75rem',
             fontSize: '0.8rem',
-            color: '#854d0e',
-            border: '1px solid #fde047'
+            color: '#1e40af',
+            border: '1px solid #bfdbfe'
           }}>
-            <strong>Why Sampling Frequency Matters:</strong> Spectral features (FFT, Power Spectrum) require the correct Hz value to calculate meaningful frequencies. The Nyquist limit (half of sampling rate) determines the maximum frequency you can detect.
+            <strong>Why Sampling Frequency Matters:</strong><br/>
+            • Spectral features (FFT, Power Spectrum) need the correct Hz value<br/>
+            • The Nyquist limit (half of sampling rate) is the max frequency you can detect<br/>
+            • Wrong frequency = meaningless spectral analysis results
           </div>
         )}
 
-        {/* Signal Type Selector - Compact Radio Buttons */}
-        <div style={{ marginBottom: '1.25rem' }}>
+        {/* Signal Type Radio Buttons */}
+        <div style={{ marginBottom: '1rem' }}>
           <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
-            What type of signal is your data?
+            Signal Type
           </label>
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
-            gap: '0.5rem',
-            maxHeight: '200px',
+            gap: '0.25rem',
+            maxHeight: '180px',
             overflowY: 'auto',
             padding: '0.5rem',
             backgroundColor: 'white',
-            borderRadius: '0.5rem',
+            borderRadius: '0.375rem',
             border: '1px solid #e2e8f0'
           }}>
             {Object.entries(SIGNAL_TYPES).map(([key, config]) => (
@@ -255,12 +246,12 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '0.375rem',
+                  gap: '0.5rem',
+                  padding: '0.4rem 0.5rem',
+                  borderRadius: '0.25rem',
                   cursor: 'pointer',
-                  backgroundColor: signalType === key ? '#e0f2fe' : 'transparent',
-                  transition: 'background-color 0.15s'
+                  backgroundColor: signalType === key ? '#dbeafe' : 'transparent',
+                  fontSize: '0.85rem'
                 }}
               >
                 <input
@@ -270,24 +261,9 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
                   checked={signalType === key}
                   onChange={() => handleSignalTypeChange(key)}
                 />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontWeight: 500, color: '#1e293b', fontSize: '0.9rem' }}>
-                    {config.label}
-                  </span>
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#64748b', 
-                    marginLeft: '0.5rem' 
-                  }}>
-                    — {config.description}
-                  </span>
-                </div>
-                <span style={{ 
-                  fontSize: '0.75rem', 
-                  color: '#0ea5e9', 
-                  fontFamily: 'monospace',
-                  whiteSpace: 'nowrap'
-                }}>
+                <span style={{ fontWeight: 500, color: '#1e293b' }}>{config.label}</span>
+                <span style={{ color: '#64748b', fontSize: '0.75rem' }}>— {config.description}</span>
+                <span style={{ marginLeft: 'auto', color: '#0ea5e9', fontFamily: 'monospace', fontSize: '0.75rem' }}>
                   {config.typicalFs} Hz
                 </span>
               </label>
@@ -295,20 +271,11 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
           </div>
         </div>
 
-        {/* Sampling Frequency Input */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '1rem',
-          flexWrap: 'wrap',
-          marginBottom: '0.75rem'
-        }}>
-          <div style={{ minWidth: '180px' }}>
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+        {/* Sampling Frequency */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div>
+            <label className="form-label" style={{ marginBottom: '0.25rem' }}>
               Sampling Frequency (Hz)
-              <span className="info-icon" title="Number of data points recorded per second" style={{ cursor: 'help' }}>
-                <BsFillInfoCircleFill />
-              </span>
             </label>
             <input
               type="number"
@@ -317,40 +284,268 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
               onChange={(e) => onConfigChange({ samplingFreq: parseFloat(e.target.value) })}
               min="0.001"
               step="any"
-              placeholder="e.g., 50"
-              style={{ width: '120px' }}
+              style={{ width: '100px' }}
             />
           </div>
           
           {configData.samplingFreq > 0 && (
-            <div style={{ 
-              fontSize: '0.8rem',
-              color: '#059669'
-            }}>
-              ✓ Max detectable frequency: <strong>{(configData.samplingFreq / 2).toFixed(1)} Hz</strong> (Nyquist)
+            <div style={{ fontSize: '0.8rem', color: '#059669', marginTop: '1.25rem' }}>
+              ✓ Nyquist frequency: <strong>{(configData.samplingFreq / 2).toFixed(1)} Hz</strong>
             </div>
           )}
         </div>
 
-        {/* Recommended domains tip */}
         {currentSignalConfig && (
-          <div style={{ 
-            fontSize: '0.8rem',
-            color: '#6b7280'
-          }}>
-            Tip: For {currentSignalConfig.label.split('(')[0].trim()}, recommended domains are{' '}
-            <strong>{currentSignalConfig.recommendedDomains.join(', ')}</strong>
+          <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.75rem' }}>
+            💡 Recommended for {currentSignalConfig.label}: <strong>{currentSignalConfig.recommendedDomains.join(', ')}</strong> domains
           </div>
         )}
       </div>
 
-      {/* Label Detection Section */}
+      {/* Feature Domains */}
       <div className="form-group">
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' }}>
-          Activity/Label Detection
+          Feature Domains
         </h3>
         
-        <label className="checkbox-item" style={{ marginBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label className="checkbox-item">
+            <input
+              type="checkbox"
+              className="checkbox-input"
+              checked={configData.domains.includes('statistical')}
+              onChange={(e) => handleDomainChange('statistical', e.target.checked)}
+            />
+            <span className="checkbox-label">
+              <strong>Statistical</strong>
+              <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
+                — Mean, Std, Variance, Skewness, Kurtosis
+              </span>
+            </span>
+          </label>
+
+          <label className="checkbox-item">
+            <input
+              type="checkbox"
+              className="checkbox-input"
+              checked={configData.domains.includes('temporal')}
+              onChange={(e) => handleDomainChange('temporal', e.target.checked)}
+            />
+            <span className="checkbox-label">
+              <strong>Temporal</strong>
+              <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
+                — Zero crossing, Autocorrelation, Energy, Slope
+              </span>
+            </span>
+          </label>
+
+          <label className="checkbox-item">
+            <input
+              type="checkbox"
+              className="checkbox-input"
+              checked={configData.domains.includes('spectral')}
+              onChange={(e) => handleDomainChange('spectral', e.target.checked)}
+            />
+            <span className="checkbox-label">
+              <strong>Spectral</strong>
+              <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
+                — FFT, Power Spectrum, Frequency analysis
+              </span>
+            </span>
+          </label>
+        </div>
+
+        {configData.domains.includes('spectral') && (
+          <div style={{ 
+            marginTop: '0.5rem', 
+            padding: '0.5rem 0.75rem', 
+            backgroundColor: '#fef9c3',
+            borderRadius: '0.375rem',
+            fontSize: '0.8rem',
+            color: '#854d0e'
+          }}>
+            ⚠️ Spectral features require accurate sampling frequency
+          </div>
+        )}
+      </div>
+
+      {/* Window Parameters - WITH EDUCATIONAL TOOLTIPS */}
+      <div className="form-group" style={{ 
+        backgroundColor: '#f8fafc', 
+        padding: '1.25rem', 
+        borderRadius: '0.5rem',
+        border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#374151', margin: 0 }}>
+            Window Parameters
+          </h3>
+          <button
+            type="button"
+            onClick={() => setShowWindowHelp(!showWindowHelp)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#6b7280',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem'
+            }}
+          >
+            <BsFillQuestionCircleFill /> {showWindowHelp ? 'Hide guide' : 'How to choose?'}
+          </button>
+        </div>
+
+        {/* Educational Tooltip for Window Size */}
+        {showWindowHelp && (
+          <div style={{
+            backgroundColor: '#eff6ff',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            marginBottom: '1rem',
+            fontSize: '0.85rem',
+            color: '#1e40af',
+            border: '1px solid #bfdbfe'
+          }}>
+            <strong style={{ fontSize: '0.9rem' }}>📚 Window Size Guide</strong>
+            
+            <div style={{ marginTop: '0.75rem' }}>
+              <strong>What is a window?</strong>
+              <p style={{ margin: '0.25rem 0 0.75rem 0', color: '#3b82f6' }}>
+                Your data is divided into smaller segments called "windows". Features are calculated for each window separately.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div style={{ backgroundColor: '#dbeafe', padding: '0.75rem', borderRadius: '0.375rem' }}>
+                <strong>🔹 Small Window (64-128 samples)</strong>
+                <ul style={{ margin: '0.25rem 0 0 1rem', padding: 0, fontSize: '0.8rem' }}>
+                  <li>Better for detecting <em>fast changes</em></li>
+                  <li>Good for short activities (steps, gestures)</li>
+                  <li>More windows = more data points</li>
+                  <li>Use when: Small dataset (&lt;1000 rows)</li>
+                </ul>
+              </div>
+              
+              <div style={{ backgroundColor: '#dbeafe', padding: '0.75rem', borderRadius: '0.375rem' }}>
+                <strong>🔸 Large Window (256-512 samples)</strong>
+                <ul style={{ margin: '0.25rem 0 0 1rem', padding: 0, fontSize: '0.8rem' }}>
+                  <li>Better for detecting <em>slow patterns</em></li>
+                  <li>Good for long activities (walking, sitting)</li>
+                  <li>More stable features, less noise</li>
+                  <li>Use when: Large dataset (&gt;5000 rows)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#fef3c7', padding: '0.75rem', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
+              <strong>📏 Rule of Thumb:</strong>
+              <ul style={{ margin: '0.25rem 0 0 1rem', padding: 0, fontSize: '0.8rem' }}>
+                <li><strong>Small file (&lt;500 rows):</strong> Use window size 32-64</li>
+                <li><strong>Medium file (500-5000 rows):</strong> Use window size 128-256</li>
+                <li><strong>Large file (&gt;5000 rows):</strong> Use window size 256-512</li>
+                <li><strong>Window should be smaller than total rows!</strong></li>
+              </ul>
+            </div>
+
+            <div>
+              <strong>What is Overlap?</strong>
+              <p style={{ margin: '0.25rem 0 0 0', color: '#3b82f6', fontSize: '0.8rem' }}>
+                Overlap (%) controls how much consecutive windows share. 50% overlap means each window shares half its data with the next, creating smoother transitions. Use 0% for independent windows, 50% for standard analysis.
+              </p>
+            </div>
+          </div>
+        )}
+        
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              Window Size (samples)
+              <span 
+                className="info-icon" 
+                title="Number of data points per window. Smaller = more detail, Larger = more stability"
+                style={{ cursor: 'help' }}
+              >
+                <BsFillInfoCircleFill />
+              </span>
+            </label>
+            <input
+              type="number"
+              className="form-input"
+              value={configData.windowSize}
+              onChange={(e) => onConfigChange({ windowSize: parseInt(e.target.value) })}
+              placeholder="e.g., 128"
+              style={{ width: '100px' }}
+            />
+            {windowDuration > 0 && (
+              <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.25rem' }}>
+                = {windowDuration} seconds
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              Overlap (%)
+              <span 
+                className="info-icon" 
+                title="How much consecutive windows share. 0% = no overlap, 50% = standard"
+                style={{ cursor: 'help' }}
+              >
+                <BsFillInfoCircleFill />
+              </span>
+            </label>
+            <input
+              type="number"
+              className="form-input"
+              value={configData.overlap}
+              onChange={(e) => onConfigChange({ overlap: parseFloat(e.target.value) })}
+              min="0"
+              max="99"
+              placeholder="e.g., 50"
+              style={{ width: '80px' }}
+            />
+          </div>
+
+          {/* Live Preview */}
+          {estimatedWindows > 0 && (
+            <div style={{ 
+              backgroundColor: '#ecfdf5', 
+              padding: '0.75rem', 
+              borderRadius: '0.375rem',
+              fontSize: '0.8rem',
+              color: '#065f46',
+              marginTop: '1.25rem'
+            }}>
+              <strong>Preview:</strong> ~{estimatedWindows} windows will be created
+            </div>
+          )}
+        </div>
+
+        {/* Warning if window size is too large */}
+        {configData.windowSize >= fileInfo.rows && (
+          <div style={{ 
+            marginTop: '0.75rem', 
+            padding: '0.5rem 0.75rem', 
+            backgroundColor: '#fee2e2',
+            borderRadius: '0.375rem',
+            fontSize: '0.8rem',
+            color: '#991b1b'
+          }}>
+            ⚠️ Window size ({configData.windowSize}) is larger than your data ({fileInfo.rows} rows). Please use a smaller window.
+          </div>
+        )}
+      </div>
+
+      {/* Label Detection */}
+      <div className="form-group">
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#374151' }}>
+          Activity Labels (Optional)
+        </h3>
+        
+        <label className="checkbox-item">
           <input
             type="checkbox"
             className="checkbox-input"
@@ -361,7 +556,7 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
         </label>
         
         {hasLabels && availableColumns.length > 0 && (
-          <div style={{ marginLeft: '1.5rem' }}>
+          <div style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
             <select
               value={selectedLabelColumn}
               onChange={(e) => handleLabelColumnChange(e.target.value)}
@@ -381,119 +576,6 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
             No text columns found for labels.
           </p>
         )}
-      </div>
-
-      {/* Feature Domains */}
-      <div className="form-group">
-        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' }}>
-          Feature Domains
-        </h3>
-        
-        <div className="checkbox-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="checkbox-item">
-            <input
-              type="checkbox"
-              className="checkbox-input"
-              checked={configData.domains.includes('temporal')}
-              onChange={(e) => handleDomainChange('temporal', e.target.checked)}
-            />
-            <span className="checkbox-label">
-              <strong>Temporal</strong>
-              <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
-                (Zero crossing, Autocorrelation, Energy, Slope)
-              </span>
-            </span>
-          </label>
-
-          <label className="checkbox-item">
-            <input
-              type="checkbox"
-              className="checkbox-input"
-              checked={configData.domains.includes('statistical')}
-              onChange={(e) => handleDomainChange('statistical', e.target.checked)}
-            />
-            <span className="checkbox-label">
-              <strong>Statistical</strong>
-              <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
-                (Mean, Std, Variance, Skewness, Kurtosis)
-              </span>
-            </span>
-          </label>
-
-          <label className="checkbox-item">
-            <input
-              type="checkbox"
-              className="checkbox-input"
-              checked={configData.domains.includes('spectral')}
-              onChange={(e) => handleDomainChange('spectral', e.target.checked)}
-            />
-            <span className="checkbox-label">
-              <strong>Spectral</strong>
-              <span style={{ fontSize: '0.8rem', color: '#6b7280', marginLeft: '0.5rem' }}>
-                (FFT, Power Spectrum, Frequency analysis)
-              </span>
-            </span>
-          </label>
-        </div>
-
-        {configData.domains.includes('spectral') && (
-          <div style={{ 
-            marginTop: '0.5rem', 
-            padding: '0.5rem 0.75rem', 
-            backgroundColor: '#fef9c3',
-            borderRadius: '0.375rem',
-            fontSize: '0.8rem',
-            color: '#854d0e'
-          }}>
-            ⚠️ Spectral features require accurate sampling frequency!
-          </div>
-        )}
-      </div>
-
-      {/* Window Parameters */}
-      <div className="form-group">
-        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' }}>
-          Window Parameters
-        </h3>
-        
-        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <div>
-            <label className="form-label">
-              Window Size (samples)
-              <span className="info-icon" title="Number of data points in each window"><BsFillInfoCircleFill /></span>
-            </label>
-            <input
-              type="number"
-              className="form-input"
-              value={configData.windowSize}
-              onChange={(e) => onConfigChange({ windowSize: parseInt(e.target.value) })}
-              placeholder="e.g., 128"
-              style={{ width: '120px' }}
-            />
-            {configData.samplingFreq > 0 && configData.windowSize > 0 && (
-              <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.5rem' }}>
-                ≈ {(configData.windowSize / configData.samplingFreq).toFixed(2)}s
-              </span>
-            )}
-          </div>
-
-          <div>
-            <label className="form-label">
-              Overlap (%)
-              <span className="info-icon" title="Percentage of overlap between windows"><BsFillInfoCircleFill /></span>
-            </label>
-            <input
-              type="number"
-              className="form-input"
-              value={configData.overlap}
-              onChange={(e) => onConfigChange({ overlap: parseFloat(e.target.value) })}
-              min="0"
-              max="99"
-              placeholder="e.g., 50"
-              style={{ width: '80px' }}
-            />
-          </div>
-        </div>
       </div>
 
       {/* Error Message */}
@@ -526,9 +608,9 @@ function Step2Configure({ fileInfo, configData, onConfigChange, onBack, onExtrac
         <button 
           className="btn btn-primary" 
           onClick={handleRunExtraction}
-          disabled={isExtracting}
+          disabled={isExtracting || configData.windowSize >= fileInfo.rows}
         >
-          {isExtracting ? 'Extracting...' : 'Run Extraction →'}
+          {isExtracting ? 'Extracting...' : 'Extract Features →'}
         </button>
       </div>
     </div>

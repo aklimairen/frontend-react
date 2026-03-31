@@ -6,7 +6,6 @@ import Step3Results from './components/Step3Results';
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
-  // eslint-disable-next-line no-unused-vars
   const [uploadedFile, setUploadedFile] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
   const [configData, setConfigData] = useState({
@@ -18,53 +17,37 @@ function App() {
     windowSize: 128,
     overlap: 50,
     hasLabels: false,
-    labelColumn: ''  // Add support for label column
+    labelColumn: ''
   });
   const [extractionResults, setExtractionResults] = useState(null);
 
   const handleFileUpload = (file, info) => {
-    console.log('📁 File uploaded:', file.name);
-    console.log('📊 File info:', info);
     setUploadedFile(file);
     setFileInfo(info);
   };
 
   const handleGoToStep2 = () => {
-    console.log('➡️ Going to Step 2');
     setCurrentStep(2);
   };
 
   const handleBackToStep1 = () => {
-    console.log('⬅️ Going back to Step 1');
     setCurrentStep(1);
   };
 
   const handleConfigChange = (newConfig) => {
-    console.log('⚙️ Config changed:', newConfig);
     setConfigData({ ...configData, ...newConfig });
   };
 
   const handleExtractionComplete = (results) => {
-    console.log('✅ EXTRACTION COMPLETE!');
-    console.log('📊 Results received:', results);
-    console.log('📊 Feature count:', results.feature_count);
-    console.log('📊 Features:', Object.keys(results.features || {}).length);
-    
     setExtractionResults(results);
-    
-    console.log('🎯 Setting currentStep to 3');
     setCurrentStep(3);
-    
-    console.log('✅ State updated - should show Step 3 now');
   };
 
   const handleNewExtraction = () => {
-    console.log('🔄 Starting new extraction');
     setCurrentStep(1);
     setUploadedFile(null);
     setFileInfo(null);
     setExtractionResults(null);
-    // Reset config to defaults
     setConfigData({
       samplingFreq: 50,
       handleMissing: true,
@@ -78,24 +61,36 @@ function App() {
     });
   };
 
-  console.log('🔄 App render - currentStep:', currentStep);
-  console.log('📊 extractionResults:', extractionResults ? 'HAS DATA' : 'NO DATA');
-
   return (
     <div className="App">
       <header className="app-header">
         <div className="header-content">
-          <h1>TSFEL Feature Extraction</h1>
-          <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.5rem' }}>
-            Debug Mode - Current Step: {currentStep}
+          <h1>TSFEL Feature Extraction Tool</h1>
+          <p className="header-subtitle">
+            Extract time series features without programming
           </p>
+        </div>
+        
+        {/* Step Indicator */}
+        <div className="step-indicator">
+          <div className={`step-dot ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
+            <span>1</span>
+            <span className="step-label">Upload</span>
+          </div>
+          <div className={`step-line ${currentStep > 1 ? 'completed' : ''}`}></div>
+          <div className={`step-dot ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}>
+            <span>2</span>
+            <span className="step-label">Configure</span>
+          </div>
+          <div className={`step-line ${currentStep > 2 ? 'completed' : ''}`}></div>
+          <div className={`step-dot ${currentStep >= 3 ? 'active' : ''}`}>
+            <span>3</span>
+            <span className="step-label">Results</span>
+          </div>
         </div>
       </header>
 
       <main className="app-main">
-        {/* Debug Info */}
-        
-
         {currentStep === 1 && (
           <Step1Upload
             onFileUpload={handleFileUpload}
@@ -117,51 +112,35 @@ function App() {
         )}
 
         {currentStep === 3 && (
-          <div>
-            
-            
+          <>
             {extractionResults ? (
               <Step3Results
                 results={extractionResults}
                 onNewExtraction={handleNewExtraction}
                 uploadedFile={fileInfo?.filename}
                 windowSize={configData.windowSize}
-                overlap={configData.overlap / 100}  // Convert percentage to decimal
-                labelColumn={configData.labelColumn}  // Pass label column
+                overlap={configData.overlap / 100}
+                labelColumn={configData.labelColumn}
               />
             ) : (
-              <div style={{
-                backgroundColor: '#fee2e2',
-                padding: '2rem',
-                borderRadius: '0.5rem',
-                border: '2px solid #ef4444',
-                textAlign: 'center'
-              }}>
-                <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#991b1b' }}>
-                  ❌ ERROR: No results data!
-                </p>
-                <p style={{ fontSize: '0.875rem', color: '#b91c1c', marginTop: '0.5rem' }}>
-                  Step 3 mounted but extractionResults is null/undefined
-                </p>
-                <button 
-                  onClick={handleBackToStep1}
-                  style={{
-                    marginTop: '1rem',
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#991b1b',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.25rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Go Back to Step 1
+              <div className="error-container">
+                <p className="error-title">Something went wrong</p>
+                <p className="error-text">No results were returned. Please try again.</p>
+                <button className="btn btn-primary" onClick={handleBackToStep1}>
+                  Start Over
                 </button>
               </div>
             )}
-          </div>
+          </>
         )}
       </main>
+
+      <footer className="app-footer">
+        <p>
+          Powered by <a href="https://github.com/fraunhoferportugal/tsfel" target="_blank" rel="noopener noreferrer">TSFEL Library</a>
+          {' | '}Master's Thesis Project - University of Bremen
+        </p>
+      </footer>
     </div>
   );
 }

@@ -16,8 +16,6 @@ function Step3Results({ results, onNewExtraction, uploadedFile, windowSize, over
   const [showHeatmapTutorial, setShowHeatmapTutorial] = useState(false); // Changed to false - tutorial hidden by default
   const [showTimeSeriesViz, setShowTimeSeriesViz] = useState(false);
 
-  console.log('🎨 Step3Results rendering with results:', results);
-
   if (!results) {
     return (
       <div className="step-container">
